@@ -7,19 +7,24 @@ app = Flask(__name__)
 # قائمة لحفظ الرسائل
 messages = []
 
-# إعداد استقبال الرسائل عبر Socket
+# إعداد استقبال الرسائل عبر Socket باستخدام TCP
 def syslog_listener():
     # عنوان IP والمنفذ للاستماع
-    syslog_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    syslog_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     syslog_socket.bind(("0.0.0.0", 515))
+    syslog_socket.listen(5)  # تفعيل الاستماع مع 5 اتصالات متزامنة
 
     while True:
-        data, addr = syslog_socket.recvfrom(1024)
-        message = data.decode('utf-8')
-        messages.append({"ip": addr[0], "message": message, "time": request_date()})
-        # حد الرسائل لعرض آخر 10000 رسالة فقط
-        if len(messages) > 10000:
-            messages.pop(0)
+        conn, addr = syslog_socket.accept()  # قبول الاتصال الجديد
+        with conn:
+            data = conn.recv(1024)
+            if not data:
+                continue
+            message = data.decode('utf-8')
+            messages.append({"ip": addr[0], "message": message, "time": request_date()})
+            # حد الرسائل لعرض آخر 10000 رسالة فقط
+            if len(messages) > 10000:
+                messages.pop(0)
 
 # استدعاء التاريخ الحالي
 def request_date():
