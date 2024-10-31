@@ -1,9 +1,7 @@
 #!/bin/bash
 
-# تثبيت المتطلبات
-echo "Installing Python dependencies..."
+echo "Installing dependencies..."
 pip install -r requirements.txt
 
-# تشغيل التطبيق
-echo "Running the main script..."
-python app.py
+echo "Starting the syslog daemon and web server..."
+python3 app.py
